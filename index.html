@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Link extender</title>
+</head>
+<body>
+  <h1>Link extender</h1>
+  <input id="link" type="text">
+  <button id="extend">Extend</button>
+  <div>
+    <a id="destination"></a>
+    <button id="copy">Copy</button>
+  </div>
+  <script>
+    (() => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const destination = urlParams.get('d');
+      if (destination) {
+        const url = atob(destination);
+        console.log(url)
+        window.location.replace(url);
+      }
+    })()
+  </script>
+  <script>
+    (() => {
+      const $link = document.querySelector('#link')
+      const $extend = document.querySelector('#extend')
+      const $destination = document.querySelector('#destination')
+      $extend.addEventListener('click', () => showLink())
+      $link.addEventListener('keydown', ({ key }) => key == 'Enter' && showLink())
+
+      function showLink() {
+        const url = $link.value;
+        const link = createLink(url);
+        $destination.textContent = link;
+        $destination.href = link;
+      }
+
+      function createLink(url) {
+        const encoded = btoa(url)
+        const urlObj = new URL(window.location.href)
+        urlObj.searchParams.set('d', encoded)
+        return urlObj.toString()
+      }
+    })()
+  </script>
+  <script>
+    (() => {
+      navigator.permissions.query({name: "clipboard-write"}).then(result => {
+        if (result.state == "granted" || result.state == "prompt") {
+          const $copy = document.querySelector('#copy');
+          const $url = document.querySelector('#destination');
+          $copy.addEventListener('click', () => navigator.clipboard.writeText($url.href));
+        }
+      });
+    })()
+  </script>
+</body>
+</html>
